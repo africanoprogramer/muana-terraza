@@ -191,7 +191,7 @@ function TarjetaPedido({
         </p>
       )}
       <div className="flex justify-between items-center">
-        <span className="font-bold text-amber-600">{pedido.total.toFixed(2)} €</span>
+        <span className="font-bold text-amber-600">{pedido.total.toLocaleString("fr-FR")} FCFA</span>
         <button
           onClick={onAvanzar}
           disabled={cargando}

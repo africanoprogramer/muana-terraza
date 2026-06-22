@@ -206,7 +206,7 @@ export default function AdminMenuPage() {
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-stone-800 text-sm">{item.nombre}</p>
                   <p className="text-stone-400 text-xs truncate">{item.descripcion}</p>
-                  <p className="text-amber-600 font-bold text-sm mt-0.5">{item.precio.toFixed(2)} €</p>
+                  <p className="text-amber-600 font-bold text-sm mt-0.5">{item.precio.toLocaleString("fr-FR")} FCFA</p>
                 </div>
                 <div className="flex gap-1 flex-shrink-0">
                   <button

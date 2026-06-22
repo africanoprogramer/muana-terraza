@@ -163,7 +163,7 @@ export default function SeguimientoPedidoPage() {
                   {item.cantidad}× {item.nombre}
                 </span>
                 <span className="font-medium text-stone-800">
-                  {(item.precio * item.cantidad).toFixed(2)} €
+                  {(item.precio * item.cantidad).toLocaleString("fr-FR")} FCFA
                 </span>
               </div>
             ))}
@@ -173,7 +173,7 @@ export default function SeguimientoPedidoPage() {
           </div>
           <div className="border-t border-stone-100 mt-3 pt-3 flex justify-between font-bold">
             <span>Total</span>
-            <span className="text-amber-600">{pedido.total.toFixed(2)} €</span>
+            <span className="text-amber-600">{pedido.total.toLocaleString("fr-FR")} FCFA</span>
           </div>
         </div>
       </div>

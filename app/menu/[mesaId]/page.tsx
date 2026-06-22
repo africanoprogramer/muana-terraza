@@ -136,7 +136,7 @@ export default function MenuPage() {
                 {item.descripcion && (
                   <p className="text-stone-500 text-xs mt-0.5 line-clamp-2">{item.descripcion}</p>
                 )}
-                <p className="text-amber-600 font-bold mt-1">{item.precio.toFixed(2)} €</p>
+                <p className="text-amber-600 font-bold mt-1">{item.precio.toLocaleString("fr-FR")} FCFA</p>
               </div>
               <div className="flex flex-col items-center justify-center gap-1">
                 {qty === 0 ? (
@@ -194,7 +194,7 @@ export default function MenuPage() {
               {totalItems}
             </span>
             <span>{enviando ? "Enviando pedido..." : "Pedir ahora"}</span>
-            <span>{total.toFixed(2)} €</span>
+            <span>{total.toLocaleString("fr-FR")} FCFA</span>
           </button>
         </div>
       )}
