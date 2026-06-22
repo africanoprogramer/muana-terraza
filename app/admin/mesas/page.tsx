@@ -34,23 +34,32 @@ export default function AdminMesasPage() {
   const handleAgregar = async () => {
     if (!nuevaMesa.nombre.trim() || agregando) return;
     setAgregando(true);
-    await addMesa({ ...nuevaMesa, activa: true });
-    setNuevaMesa((p) => ({ numero: p.numero + 1, nombre: "" }));
-    await cargar();
-    setAgregando(false);
+    try {
+      const ref = await addMesa({ ...nuevaMesa, activa: true });
+      const nueva: Mesa = { id: ref.id, ...nuevaMesa, activa: true };
+      setMesas((prev) => [...prev, nueva].sort((a, b) => a.numero - b.numero));
+      setNuevaMesa((p) => ({ numero: p.numero + 1, nombre: "" }));
+    } finally {
+      setAgregando(false);
+    }
   };
 
   const handleEliminar = async (id: string) => {
     if (!confirm("¿Eliminar esta mesa?")) return;
     setEliminando(id);
-    await deleteMesa(id);
-    await cargar();
-    setEliminando(null);
+    try {
+      await deleteMesa(id);
+      setMesas((prev) => prev.filter((m) => m.id !== id));
+    } finally {
+      setEliminando(null);
+    }
   };
 
   const handleToggle = async (mesa: Mesa) => {
     await updateMesa(mesa.id, { activa: !mesa.activa });
-    await cargar();
+    setMesas((prev) =>
+      prev.map((m) => (m.id === mesa.id ? { ...m, activa: !mesa.activa } : m))
+    );
   };
 
   const imprimirQR = (mesa: Mesa) => {
