@@ -2,7 +2,9 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { storage } from "@/lib/firebase";
 import {
   getCategorias,
   getMenuItems,
@@ -30,7 +32,11 @@ export default function AdminMenuPage() {
   const [editando, setEditando] = useState<Partial<ItemMenu> | null>(null);
   const [nuevaCategoria, setNuevaCategoria] = useState("");
   const [guardando, setGuardando] = useState(false);
+  const [agregandoCat, setAgregandoCat] = useState(false);
   const [catActiva, setCatActiva] = useState<string>("todas");
+  const [subiendoImagen, setSubiendoImagen] = useState(false);
+  const [progresoImagen, setProgresoImagen] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const cargar = async () => {
     const [cats, menuItems] = await Promise.all([getCategorias(), getMenuItems()]);
@@ -66,20 +72,51 @@ export default function AdminMenuPage() {
   };
 
   const handleAgregarCategoria = async () => {
-    if (!nuevaCategoria.trim()) return;
-    await addCategoria({
-      nombre: nuevaCategoria.trim(),
-      orden: categorias.length,
-      activa: true,
-    });
-    setNuevaCategoria("");
-    await cargar();
+    if (!nuevaCategoria.trim() || agregandoCat) return;
+    setAgregandoCat(true);
+    try {
+      await addCategoria({ nombre: nuevaCategoria.trim(), orden: categorias.length, activa: true });
+      setNuevaCategoria("");
+      await cargar();
+    } finally {
+      setAgregandoCat(false);
+    }
   };
 
   const handleEliminarCategoria = async (id: string) => {
     if (!confirm("¿Eliminar esta categoría?")) return;
     await deleteCategoria(id);
     await cargar();
+  };
+
+  const handleSeleccionarImagen = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const nombre = `menu/${Date.now()}_${file.name.replace(/\s/g, "_")}`;
+    const storageRef = ref(storage, nombre);
+    const tarea = uploadBytesResumable(storageRef, file);
+
+    setSubiendoImagen(true);
+    setProgresoImagen(0);
+
+    tarea.on(
+      "state_changed",
+      (snap) => {
+        const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+        setProgresoImagen(pct);
+      },
+      (err) => {
+        console.error("Error subiendo imagen:", err);
+        setSubiendoImagen(false);
+      },
+      async () => {
+        const url = await getDownloadURL(tarea.snapshot.ref);
+        setEditando((p) => ({ ...p, imagen: url }));
+        setSubiendoImagen(false);
+        setProgresoImagen(0);
+      }
+    );
   };
 
   const itemsFiltrados =
@@ -115,14 +152,15 @@ export default function AdminMenuPage() {
               value={nuevaCategoria}
               onChange={(e) => setNuevaCategoria(e.target.value)}
               placeholder="Nueva categoría..."
-              className="border border-stone-200 rounded-xl px-3 py-2 text-sm flex-1 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-900 font-medium flex-1 focus:outline-none focus:ring-2 focus:ring-amber-400"
               onKeyDown={(e) => e.key === "Enter" && handleAgregarCategoria()}
             />
             <button
               onClick={handleAgregarCategoria}
-              className="bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-amber-700"
+              disabled={agregandoCat}
+              className="bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-amber-700 disabled:opacity-60 min-w-[90px]"
             >
-              Añadir
+              {agregandoCat ? "Añadiendo..." : "Añadir"}
             </button>
           </div>
         </section>
@@ -139,7 +177,6 @@ export default function AdminMenuPage() {
             </button>
           </div>
 
-          {/* Filtro por categoría */}
           <div className="flex gap-2 overflow-x-auto pb-2 mb-4">
             <button
               onClick={() => setCatActiva("todas")}
@@ -160,12 +197,11 @@ export default function AdminMenuPage() {
 
           <div className="space-y-2">
             {itemsFiltrados.map((item) => (
-              <div
-                key={item.id}
-                className="bg-white rounded-xl border border-stone-100 p-4 flex items-center gap-3"
-              >
-                {item.imagen && (
+              <div key={item.id} className="bg-white rounded-xl border border-stone-100 p-4 flex items-center gap-3">
+                {item.imagen ? (
                   <img src={item.imagen} alt={item.nombre} className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+                ) : (
+                  <div className="w-14 h-14 rounded-lg bg-stone-100 flex items-center justify-center flex-shrink-0 text-xl">🍽️</div>
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-stone-800 text-sm">{item.nombre}</p>
@@ -201,7 +237,7 @@ export default function AdminMenuPage() {
       {/* Modal de edición */}
       {editando !== null && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 space-y-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <h3 className="font-bold text-lg text-stone-800">
               {editando.id ? "Editar artículo" : "Nuevo artículo"}
             </h3>
@@ -238,12 +274,77 @@ export default function AdminMenuPage() {
                   ))}
                 </select>
               </div>
-              <input
-                value={editando.imagen ?? ""}
-                onChange={(e) => setEditando((p) => ({ ...p, imagen: e.target.value || null }))}
-                placeholder="URL de imagen (opcional)"
-                className="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-400"
-              />
+
+              {/* Imagen */}
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Imagen</p>
+
+                {/* Preview */}
+                {editando.imagen && (
+                  <div className="relative">
+                    <img
+                      src={editando.imagen}
+                      alt="Preview"
+                      className="w-full h-40 object-cover rounded-xl"
+                    />
+                    <button
+                      onClick={() => setEditando((p) => ({ ...p, imagen: null }))}
+                      className="absolute top-2 right-2 bg-black/60 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black/80"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+
+                {/* Botón subir */}
+                {!editando.imagen && (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={subiendoImagen}
+                    className="w-full border-2 border-dashed border-stone-200 rounded-xl py-6 flex flex-col items-center gap-2 text-stone-400 hover:border-amber-400 hover:text-amber-500 transition-colors disabled:opacity-60"
+                  >
+                    {subiendoImagen ? (
+                      <>
+                        <span className="text-2xl">⏳</span>
+                        <span className="text-sm font-medium">Subiendo... {progresoImagen}%</span>
+                        <div className="w-32 h-1.5 bg-stone-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-amber-500 rounded-full transition-all"
+                            style={{ width: `${progresoImagen}%` }}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-2xl">📷</span>
+                        <span className="text-sm font-medium">Pulsa para subir imagen</span>
+                        <span className="text-xs">JPG, PNG, WEBP</span>
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {/* Cambiar imagen si ya hay una */}
+                {editando.imagen && !subiendoImagen && (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full text-xs text-stone-500 hover:text-amber-600 py-1"
+                  >
+                    Cambiar imagen
+                  </button>
+                )}
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleSeleccionarImagen}
+                />
+              </div>
+
               <input
                 type="number"
                 value={editando.orden ?? 0}
@@ -261,7 +362,7 @@ export default function AdminMenuPage() {
               </button>
               <button
                 onClick={handleGuardar}
-                disabled={guardando}
+                disabled={guardando || subiendoImagen}
                 className="flex-1 bg-amber-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-amber-700 disabled:opacity-50"
               >
                 {guardando ? "Guardando..." : "Guardar"}
