@@ -17,6 +17,7 @@ export default function AdminMesasPage() {
   const [nuevaMesa, setNuevaMesa] = useState({ numero: 1, nombre: "" });
   const [qrSeleccionado, setQrSeleccionado] = useState<Mesa | null>(null);
   const [eliminando, setEliminando] = useState<string | null>(null);
+  const [agregando, setAgregando] = useState(false);
 
   const cargar = async () => {
     const data = await getMesas();
@@ -31,10 +32,12 @@ export default function AdminMesasPage() {
   }, []);
 
   const handleAgregar = async () => {
-    if (!nuevaMesa.nombre.trim()) return;
+    if (!nuevaMesa.nombre.trim() || agregando) return;
+    setAgregando(true);
     await addMesa({ ...nuevaMesa, activa: true });
     setNuevaMesa((p) => ({ numero: p.numero + 1, nombre: "" }));
     await cargar();
+    setAgregando(false);
   };
 
   const handleEliminar = async (id: string) => {
@@ -95,9 +98,10 @@ export default function AdminMesasPage() {
             />
             <button
               onClick={handleAgregar}
-              className="bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-amber-700"
+              disabled={agregando}
+              className="bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-amber-700 disabled:opacity-60 disabled:cursor-not-allowed min-w-[80px]"
             >
-              Añadir
+              {agregando ? "Añadiendo..." : "Añadir"}
             </button>
           </div>
         </section>
