@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useEffect, useState } from "react";
 import { suscribirPedidosPendientes, actualizarEstadoPedido } from "@/lib/pedidos";
 import type { Pedido, EstadoPedido } from "@/types";
@@ -202,4 +204,3 @@ function TarjetaPedido({
   );
 }
 
-const COLOR_CARD_FIX: Record<EstadoPedido, string> = COLOR_CARD;

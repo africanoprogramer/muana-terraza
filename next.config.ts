@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Todas las páginas usan Firebase (cliente), no hay rutas estáticas
+  output: "standalone",
 };
 
 export default nextConfig;
