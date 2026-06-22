@@ -16,9 +16,9 @@ import type { Categoria, ItemMenu, Mesa } from "@/types";
 // ─── Categorías ───────────────────────────────────────────────────────────────
 
 export async function getCategorias(): Promise<Categoria[]> {
-  const q = query(collection(db, "categories"), orderBy("orden", "asc"));
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Categoria));
+  const snap = await getDocs(collection(db, "categories"));
+  const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Categoria));
+  return docs.sort((a, b) => a.orden - b.orden);
 }
 
 export async function addCategoria(data: Omit<Categoria, "id">) {
@@ -36,19 +36,16 @@ export async function deleteCategoria(id: string) {
 // ─── Items de menú ────────────────────────────────────────────────────────────
 
 export async function getMenuItems(): Promise<ItemMenu[]> {
-  const q = query(collection(db, "menu"), orderBy("orden", "asc"));
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as ItemMenu));
+  const snap = await getDocs(collection(db, "menu"));
+  const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() } as ItemMenu));
+  return docs.sort((a, b) => a.orden - b.orden);
 }
 
 export function suscribirMenu(callback: (items: ItemMenu[]) => void) {
-  const q = query(
-    collection(db, "menu"),
-    where("disponible", "==", true),
-    orderBy("orden", "asc")
-  );
+  const q = query(collection(db, "menu"), where("disponible", "==", true));
   return onSnapshot(q, (snap) => {
-    callback(snap.docs.map((d) => ({ id: d.id, ...d.data() } as ItemMenu)));
+    const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() } as ItemMenu));
+    callback(docs.sort((a, b) => a.orden - b.orden));
   });
 }
 
@@ -67,9 +64,9 @@ export async function deleteMenuItem(id: string) {
 // ─── Mesas ────────────────────────────────────────────────────────────────────
 
 export async function getMesas(): Promise<Mesa[]> {
-  const q = query(collection(db, "tables"), orderBy("numero", "asc"));
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Mesa));
+  const snap = await getDocs(collection(db, "tables"));
+  const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Mesa));
+  return docs.sort((a, b) => a.numero - b.numero);
 }
 
 export async function addMesa(data: Omit<Mesa, "id">) {
