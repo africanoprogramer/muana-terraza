@@ -16,6 +16,7 @@ export default function AdminMesasPage() {
   const [mesas, setMesas] = useState<Mesa[]>([]);
   const [nuevaMesa, setNuevaMesa] = useState({ numero: 1, nombre: "" });
   const [qrSeleccionado, setQrSeleccionado] = useState<Mesa | null>(null);
+  const [eliminando, setEliminando] = useState<string | null>(null);
 
   const cargar = async () => {
     const data = await getMesas();
@@ -38,8 +39,10 @@ export default function AdminMesasPage() {
 
   const handleEliminar = async (id: string) => {
     if (!confirm("¿Eliminar esta mesa?")) return;
+    setEliminando(id);
     await deleteMesa(id);
     await cargar();
+    setEliminando(null);
   };
 
   const handleToggle = async (mesa: Mesa) => {
@@ -139,9 +142,10 @@ export default function AdminMesasPage() {
                     </button>
                     <button
                       onClick={() => handleEliminar(mesa.id)}
-                      className="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-500 hover:bg-red-100"
+                      disabled={eliminando === mesa.id}
+                      className="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 disabled:opacity-60 disabled:cursor-not-allowed min-w-[70px] text-center"
                     >
-                      Eliminar
+                      {eliminando === mesa.id ? "Eliminando..." : "Eliminar"}
                     </button>
                   </div>
                 </div>
