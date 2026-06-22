@@ -210,13 +210,13 @@ export default function AdminMenuPage() {
                 value={editando.nombre ?? ""}
                 onChange={(e) => setEditando((p) => ({ ...p, nombre: e.target.value }))}
                 placeholder="Nombre del artículo"
-                className="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-400"
               />
               <textarea
                 value={editando.descripcion ?? ""}
                 onChange={(e) => setEditando((p) => ({ ...p, descripcion: e.target.value }))}
                 placeholder="Descripción (opcional)"
-                className="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-900 font-medium resize-none focus:outline-none focus:ring-2 focus:ring-amber-400"
                 rows={2}
               />
               <div className="flex gap-3">
@@ -225,12 +225,12 @@ export default function AdminMenuPage() {
                   value={editando.precio ?? 0}
                   onChange={(e) => setEditando((p) => ({ ...p, precio: parseFloat(e.target.value) || 0 }))}
                   placeholder="Precio"
-                  className="w-1/2 border border-stone-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-1/2 border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-400"
                 />
                 <select
                   value={editando.categoriaId ?? ""}
                   onChange={(e) => setEditando((p) => ({ ...p, categoriaId: e.target.value }))}
-                  className="w-1/2 border border-stone-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-1/2 border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-400"
                 >
                   <option value="">Categoría...</option>
                   {categorias.map((cat) => (
@@ -242,14 +242,14 @@ export default function AdminMenuPage() {
                 value={editando.imagen ?? ""}
                 onChange={(e) => setEditando((p) => ({ ...p, imagen: e.target.value || null }))}
                 placeholder="URL de imagen (opcional)"
-                className="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-400"
               />
               <input
                 type="number"
                 value={editando.orden ?? 0}
                 onChange={(e) => setEditando((p) => ({ ...p, orden: parseInt(e.target.value) || 0 }))}
                 placeholder="Orden de aparición"
-                className="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-400"
               />
             </div>
             <div className="flex gap-3">

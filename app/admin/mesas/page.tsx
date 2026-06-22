@@ -96,13 +96,13 @@ export default function AdminMesasPage() {
               value={nuevaMesa.numero}
               onChange={(e) => setNuevaMesa((p) => ({ ...p, numero: parseInt(e.target.value) || 1 }))}
               placeholder="Nº"
-              className="w-20 border border-stone-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="w-20 border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-400"
             />
             <input
               value={nuevaMesa.nombre}
               onChange={(e) => setNuevaMesa((p) => ({ ...p, nombre: e.target.value }))}
               placeholder="Nombre (ej. Mesa 1, Terraza A...)"
-              className="flex-1 border border-stone-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="flex-1 border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-400"
               onKeyDown={(e) => e.key === "Enter" && handleAgregar()}
             />
             <button
