@@ -133,8 +133,8 @@ export default function StaffPage() {
 
       {/* Columnas Kanban */}
       <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Columna titulo="Pendientes" emoji="📋" color="bg-yellow-200 text-yellow-800" pedidos={pendientes} accionLabel="→ En cocina" actualizando={actualizando} onAvanzar={avanzarEstado} />
-        <Columna titulo="En cocina" emoji="👨‍🍳" color="bg-blue-200 text-blue-800" pedidos={preparando} accionLabel="✅ Marcar listo" actualizando={actualizando} onAvanzar={avanzarEstado} />
+        <Columna titulo="Pendientes" emoji="📋" color="bg-yellow-200 text-yellow-800" pedidos={pendientes} accionLabel="→ Preparando" actualizando={actualizando} onAvanzar={avanzarEstado} />
+        <Columna titulo="Preparando" emoji="👨‍🍳" color="bg-blue-200 text-blue-800" pedidos={preparando} accionLabel="✅ Marcar listo" actualizando={actualizando} onAvanzar={avanzarEstado} />
         <Columna titulo="Para entregar" emoji="🛎️" color="bg-green-200 text-green-800" pedidos={listos} accionLabel="🎉 Entregado" actualizando={actualizando} onAvanzar={avanzarEstado} />
       </div>
     </div>

@@ -9,7 +9,7 @@ import type { Pedido, EstadoPedido } from "@/types";
 
 const PASOS: { estado: EstadoPedido; label: string; emoji: string }[] = [
   { estado: "pendiente", label: "Recibido", emoji: "📋" },
-  { estado: "preparando", label: "En cocina", emoji: "👨‍🍳" },
+  { estado: "preparando", label: "Preparando", emoji: "👨‍🍳" },
   { estado: "listo", label: "Listo", emoji: "✅" },
   { estado: "entregado", label: "Entregado", emoji: "🎉" },
 ];
