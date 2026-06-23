@@ -57,12 +57,26 @@ export async function crearPedido(
 
 export async function actualizarEstadoPedido(
   pedidoId: string,
-  estado: EstadoPedido
+  estado: EstadoPedido,
+  camarero?: { id: string; nombre: string }
 ) {
   await updateDoc(doc(db, "orders", pedidoId), {
     estado,
     updatedAt: Timestamp.now(),
+    ...(camarero ? { camareroId: camarero.id, camareroNombre: camarero.nombre } : {}),
   });
+}
+
+export async function getPedidosHistorial(): Promise<import("@/types").Pedido[]> {
+  const { getDocs, collection: col } = await import("firebase/firestore");
+  const snap = await getDocs(col(db, "orders"));
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data() } as import("@/types").Pedido))
+    .sort((a, b) => {
+      const ta = a.createdAt?.seconds ?? 0;
+      const tb = b.createdAt?.seconds ?? 0;
+      return tb - ta;
+    });
 }
 
 export function suscribirPedido(

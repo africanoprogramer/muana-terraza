@@ -25,6 +25,13 @@ export interface ItemMenu {
 
 export type EstadoPedido = "pendiente" | "preparando" | "listo" | "entregado";
 
+export interface Camarero {
+  id: string;
+  nombre: string;
+  codigo: string;
+  activo: boolean;
+}
+
 export interface ItemPedido {
   itemId: string;
   nombre: string;
@@ -43,6 +50,8 @@ export interface Pedido {
   numero: number;
   tiempoEstimado: number;
   notas: string;
-  createdAt: number;
-  updatedAt: number;
+  camareroId?: string;
+  camareroNombre?: string;
+  createdAt: any;
+  updatedAt: any;
 }
