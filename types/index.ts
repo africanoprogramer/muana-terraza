@@ -30,6 +30,7 @@ export interface Banner {
   imagen: string;
   titulo?: string;
   subtitulo?: string;
+  descripcion?: string;
   activo: boolean;
   orden: number;
 }

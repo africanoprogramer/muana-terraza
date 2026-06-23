@@ -10,7 +10,7 @@ import type { Banner } from "@/types";
 
 export default function AdminBannersPage() {
   const [banners, setBanners] = useState<Banner[]>([]);
-  const [nuevo, setNuevo] = useState({ titulo: "", subtitulo: "", imagen: "", orden: 0, activo: true });
+  const [nuevo, setNuevo] = useState({ titulo: "", subtitulo: "", descripcion: "", imagen: "", orden: 0, activo: true });
   const [subiendoImagen, setSubiendoImagen] = useState(false);
   const [progreso, setProgreso] = useState(0);
   const [guardando, setGuardando] = useState(false);
@@ -67,7 +67,7 @@ export default function AdminBannersPage() {
     try {
       const ref = await addBanner({ ...nuevo, orden: banners.length });
       setBanners((prev) => [...prev, { id: ref.id, ...nuevo, orden: banners.length }]);
-      setNuevo({ titulo: "", subtitulo: "", imagen: "", orden: 0, activo: true });
+      setNuevo({ titulo: "", subtitulo: "", descripcion: "", imagen: "", orden: 0, activo: true });
     } finally {
       setGuardando(false);
     }
@@ -150,6 +150,13 @@ export default function AdminBannersPage() {
             placeholder="Subtítulo (opcional)"
             className="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-400"
           />
+          <textarea
+            value={nuevo.descripcion}
+            onChange={(e) => setNuevo((p) => ({ ...p, descripcion: e.target.value }))}
+            placeholder="Descripción / texto del anuncio (opcional) — el cliente lo verá al pulsar el banner"
+            className="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
+            rows={3}
+          />
           <button
             onClick={handleGuardar}
             disabled={!nuevo.imagen || guardando || subiendoImagen}
@@ -228,6 +235,13 @@ export default function AdminBannersPage() {
               onChange={(e) => setEditando((p) => p ? { ...p, subtitulo: e.target.value } : p)}
               placeholder="Subtítulo (opcional)"
               className="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-400"
+            />
+            <textarea
+              value={editando.descripcion ?? ""}
+              onChange={(e) => setEditando((p) => p ? { ...p, descripcion: e.target.value } : p)}
+              placeholder="Descripción / texto del anuncio (opcional)"
+              className="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
+              rows={3}
             />
             <div className="flex gap-3">
               <button onClick={() => setEditando(null)} className="flex-1 border border-stone-200 py-2.5 rounded-xl text-sm font-semibold text-stone-600 hover:bg-stone-50">Cancelar</button>
