@@ -5,9 +5,7 @@ import {
   onSnapshot,
   query,
   where,
-  orderBy,
   updateDoc,
-  serverTimestamp,
   Timestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
@@ -82,11 +80,19 @@ export function suscribirPedidosPendientes(
 ) {
   const q = query(
     collection(db, "orders"),
-    where("estado", "in", ["pendiente", "preparando", "listo"]),
-    orderBy("createdAt", "asc")
+    where("estado", "in", ["pendiente", "preparando", "listo"])
   );
   return onSnapshot(q, (snap) => {
-    callback(snap.docs.map((d) => ({ id: d.id, ...d.data() } as Pedido)));
+    const pedidos = snap.docs
+      .map((d) => ({ id: d.id, ...d.data() } as Pedido))
+      .sort((a, b) => {
+        const ta = a.createdAt && typeof a.createdAt === "object" && "seconds" in a.createdAt
+          ? (a.createdAt as any).seconds : a.createdAt ?? 0;
+        const tb = b.createdAt && typeof b.createdAt === "object" && "seconds" in b.createdAt
+          ? (b.createdAt as any).seconds : b.createdAt ?? 0;
+        return ta - tb;
+      });
+    callback(pedidos);
   });
 }
 
