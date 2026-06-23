@@ -25,6 +25,15 @@ export interface ItemMenu {
 
 export type EstadoPedido = "pendiente" | "preparando" | "listo" | "entregado";
 
+export interface Banner {
+  id: string;
+  imagen: string;
+  titulo?: string;
+  subtitulo?: string;
+  activo: boolean;
+  orden: number;
+}
+
 export interface Camarero {
   id: string;
   nombre: string;

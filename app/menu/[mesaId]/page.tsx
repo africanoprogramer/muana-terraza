@@ -7,8 +7,10 @@ import { useParams, useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
 import { crearPedido } from "@/lib/pedidos";
 import { suscribirMenu, getCategorias } from "@/lib/menu";
+import { getBannersActivos } from "@/lib/banners";
 import { doc, getDoc } from "firebase/firestore";
-import type { ItemMenu, Categoria, ItemPedido, Mesa } from "@/types";
+import BannerCarousel from "@/components/BannerCarousel";
+import type { ItemMenu, Categoria, ItemPedido, Mesa, Banner } from "@/types";
 
 const TODAS = "todas";
 
@@ -26,6 +28,7 @@ export default function MenuPage() {
   const [notas, setNotas] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [pedidoActivoId, setPedidoActivoId] = useState<string | null>(null);
+  const [banners, setBanners] = useState<Banner[]>([]);
 
   const cartKey = `yakoo_cart_${mesaId}`;
   const pedidoKey = `yakoo_pedido_${mesaId}`;
@@ -65,9 +68,8 @@ export default function MenuPage() {
     getDoc(doc(db, "tables", mesaId)).then((snap) => {
       if (snap.exists()) setMesa({ id: snap.id, ...snap.data() } as Mesa);
     });
-    getCategorias().then((cats) => {
-      setCategorias(cats.filter((c) => c.activa));
-    });
+    getCategorias().then((cats) => setCategorias(cats.filter((c) => c.activa)));
+    getBannersActivos().then(setBanners);
     const unsub = suscribirMenu(setItems);
     return unsub;
   }, [mesaId]);
@@ -123,6 +125,9 @@ export default function MenuPage() {
         <h1 className="text-xl font-bold">🌴 Muana Terraza Tía Leny</h1>
         {mesa && <p className="text-amber-100 text-sm mt-0.5">{mesa.nombre}</p>}
       </div>
+
+      {/* Carrusel de banners */}
+      {banners.length > 0 && <BannerCarousel banners={banners} />}
 
       {/* Banner pedido activo */}
       {pedidoActivoId && (
