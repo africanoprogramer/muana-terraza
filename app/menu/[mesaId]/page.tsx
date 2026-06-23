@@ -2,13 +2,15 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
 import { crearPedido } from "@/lib/pedidos";
 import { suscribirMenu, getCategorias } from "@/lib/menu";
 import { doc, getDoc } from "firebase/firestore";
 import type { ItemMenu, Categoria, ItemPedido, Mesa } from "@/types";
+
+const TODAS = "todas";
 
 interface CartItem extends ItemPedido {}
 
@@ -20,19 +22,51 @@ export default function MenuPage() {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [items, setItems] = useState<ItemMenu[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [categoriaActiva, setCategoriaActiva] = useState<string>("");
+  const [categoriaActiva, setCategoriaActiva] = useState<string>(TODAS);
   const [notas, setNotas] = useState("");
   const [enviando, setEnviando] = useState(false);
-  const [mostrarCart, setMostrarCart] = useState(false);
+  const [pedidoActivoId, setPedidoActivoId] = useState<string | null>(null);
+
+  const cartKey = `yakoo_cart_${mesaId}`;
+  const pedidoKey = `yakoo_pedido_${mesaId}`;
+
+  // Cargar carrito y pedido activo desde localStorage
+  useEffect(() => {
+    try {
+      const savedCart = localStorage.getItem(cartKey);
+      if (savedCart) setCart(JSON.parse(savedCart));
+      const savedNotas = localStorage.getItem(`${cartKey}_notas`);
+      if (savedNotas) setNotas(savedNotas);
+      const savedPedido = localStorage.getItem(pedidoKey);
+      if (savedPedido) setPedidoActivoId(savedPedido);
+    } catch {}
+  }, [mesaId]);
+
+  // Persistir carrito en localStorage
+  useEffect(() => {
+    try {
+      if (cart.length > 0) {
+        localStorage.setItem(cartKey, JSON.stringify(cart));
+      } else {
+        localStorage.removeItem(cartKey);
+      }
+    } catch {}
+  }, [cart]);
+
+  // Persistir notas
+  useEffect(() => {
+    try {
+      if (notas) localStorage.setItem(`${cartKey}_notas`, notas);
+      else localStorage.removeItem(`${cartKey}_notas`);
+    } catch {}
+  }, [notas]);
 
   useEffect(() => {
     getDoc(doc(db, "tables", mesaId)).then((snap) => {
       if (snap.exists()) setMesa({ id: snap.id, ...snap.data() } as Mesa);
     });
     getCategorias().then((cats) => {
-      const activas = cats.filter((c) => c.activa);
-      setCategorias(activas);
-      if (activas.length > 0) setCategoriaActiva(activas[0].id);
+      setCategorias(cats.filter((c) => c.activa));
     });
     const unsub = suscribirMenu(setItems);
     return unsub;
@@ -46,27 +80,19 @@ export default function MenuPage() {
           c.itemId === item.id ? { ...c, cantidad: c.cantidad + 1 } : c
         );
       }
-      return [
-        ...prev,
-        { itemId: item.id, nombre: item.nombre, precio: item.precio, cantidad: 1 },
-      ];
+      return [...prev, { itemId: item.id, nombre: item.nombre, precio: item.precio, cantidad: 1 }];
     });
   };
 
   const removeFromCart = (itemId: string) => {
     setCart((prev) => {
       const existing = prev.find((c) => c.itemId === itemId);
-      if (!existing || existing.cantidad === 1) {
-        return prev.filter((c) => c.itemId !== itemId);
-      }
-      return prev.map((c) =>
-        c.itemId === itemId ? { ...c, cantidad: c.cantidad - 1 } : c
-      );
+      if (!existing || existing.cantidad === 1) return prev.filter((c) => c.itemId !== itemId);
+      return prev.map((c) => c.itemId === itemId ? { ...c, cantidad: c.cantidad - 1 } : c);
     });
   };
 
-  const getQty = (itemId: string) =>
-    cart.find((c) => c.itemId === itemId)?.cantidad ?? 0;
+  const getQty = (itemId: string) => cart.find((c) => c.itemId === itemId)?.cantidad ?? 0;
 
   const total = cart.reduce((acc, c) => acc + c.precio * c.cantidad, 0);
   const totalItems = cart.reduce((acc, c) => acc + c.cantidad, 0);
@@ -76,6 +102,10 @@ export default function MenuPage() {
     setEnviando(true);
     try {
       const pedidoId = await crearPedido(mesa.id, mesa.nombre, cart, notas);
+      // Guardar pedido activo y limpiar carrito
+      localStorage.setItem(pedidoKey, pedidoId);
+      localStorage.removeItem(cartKey);
+      localStorage.removeItem(`${cartKey}_notas`);
       router.push(`/pedido/${pedidoId}`);
     } catch (err) {
       console.error(err);
@@ -83,20 +113,43 @@ export default function MenuPage() {
     }
   };
 
-  const itemsFiltrados = items.filter((i) => i.categoriaId === categoriaActiva);
+  const itemsFiltrados =
+    categoriaActiva === TODAS ? items : items.filter((i) => i.categoriaId === categoriaActiva);
 
   return (
     <div className="min-h-screen flex flex-col pb-24">
       {/* Header */}
       <div className="bg-amber-600 text-white px-4 py-5 sticky top-0 z-10 shadow-md">
         <h1 className="text-xl font-bold">🌴 Muana Terraza Tía Leny</h1>
-        {mesa && (
-          <p className="text-amber-100 text-sm mt-0.5">{mesa.nombre}</p>
-        )}
+        {mesa && <p className="text-amber-100 text-sm mt-0.5">{mesa.nombre}</p>}
       </div>
+
+      {/* Banner pedido activo */}
+      {pedidoActivoId && (
+        <button
+          onClick={() => router.push(`/pedido/${pedidoActivoId}`)}
+          className="w-full bg-green-600 text-white px-4 py-3 flex items-center justify-between text-sm font-semibold hover:bg-green-700 transition-colors"
+        >
+          <span className="flex items-center gap-2">
+            <span className="text-base">🛎️</span>
+            Tienes un pedido activo
+          </span>
+          <span className="underline">Ver estado →</span>
+        </button>
+      )}
 
       {/* Categorías */}
       <div className="flex gap-3 overflow-x-auto px-4 py-3 bg-white border-b border-stone-200 sticky top-[72px] z-10">
+        <button
+          onClick={() => setCategoriaActiva(TODAS)}
+          className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            categoriaActiva === TODAS
+              ? "bg-amber-600 text-white"
+              : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+          }`}
+        >
+          Todas
+        </button>
         {categorias.map((cat) => (
           <button
             key={cat.id}
@@ -120,16 +173,11 @@ export default function MenuPage() {
         {itemsFiltrados.map((item) => {
           const qty = getQty(item.id);
           return (
-            <div
-              key={item.id}
-              className="bg-white rounded-2xl shadow-sm border border-stone-100 flex gap-3 p-3"
-            >
-              {item.imagen && (
-                <img
-                  src={item.imagen}
-                  alt={item.nombre}
-                  className="w-20 h-20 object-cover rounded-xl flex-shrink-0"
-                />
+            <div key={item.id} className="bg-white rounded-2xl shadow-sm border border-stone-100 flex gap-3 p-3">
+              {item.imagen ? (
+                <img src={item.imagen} alt={item.nombre} className="w-20 h-20 object-cover rounded-xl flex-shrink-0" />
+              ) : (
+                <div className="w-20 h-20 rounded-xl bg-stone-100 flex items-center justify-center flex-shrink-0 text-2xl">🍽️</div>
               )}
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-stone-800 text-sm">{item.nombre}</h3>

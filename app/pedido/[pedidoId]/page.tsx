@@ -26,6 +26,19 @@ export default function SeguimientoPedidoPage() {
   const [pedido, setPedido] = useState<Pedido | null>(null);
   const [todosPedidos, setTodosPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mesaId, setMesaId] = useState<string | null>(null);
+
+  // Recuperar mesaId para el botón "volver al menú"
+  useEffect(() => {
+    // Buscar en localStorage el mesaId que tiene este pedido guardado
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith("yakoo_pedido_") && localStorage.getItem(key) === pedidoId) {
+        setMesaId(key.replace("yakoo_pedido_", ""));
+        break;
+      }
+    }
+  }, [pedidoId]);
 
   useEffect(() => {
     const unsubPedido = suscribirPedido(pedidoId, (p) => {
@@ -66,7 +79,17 @@ export default function SeguimientoPedidoPage() {
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <div className="bg-amber-600 text-white px-4 py-5">
-        <p className="text-amber-100 text-sm">Muana Terraza Tía Leny</p>
+        <div className="flex items-center justify-between">
+          <p className="text-amber-100 text-sm">Muana Terraza Tía Leny</p>
+          {mesaId && (
+            <a
+              href={`/menu/${mesaId}`}
+              className="text-amber-100 text-sm underline hover:text-white"
+            >
+              ← Volver al menú
+            </a>
+          )}
+        </div>
         <h1 className="text-2xl font-bold mt-1">Pedido #{pedido.numero}</h1>
         <p className="text-amber-100 text-sm mt-0.5">{pedido.mesaNombre}</p>
       </div>
