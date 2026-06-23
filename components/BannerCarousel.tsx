@@ -22,7 +22,7 @@ export default function BannerCarousel({ banners }: { banners: Banner[] }) {
           <div
             key={b.id}
             className="absolute inset-0 transition-opacity duration-700"
-            style={{ opacity: i === activo ? 1 : 0 }}
+            style={{ opacity: i === activo ? 1 : 0, pointerEvents: i === activo ? "auto" : "none" }}
             onClick={() => setDetalle(b)}
           >
             <img src={b.imagen} alt={b.titulo ?? "Banner"} className="w-full h-full object-cover" />
