@@ -8,6 +8,7 @@ import { db } from "@/lib/firebase";
 import { crearPedido } from "@/lib/pedidos";
 import { suscribirMenu, getCategorias } from "@/lib/menu";
 import { getBannersActivos } from "@/lib/banners";
+import { getConfig, type RestaurantConfig } from "@/lib/config";
 import { doc, getDoc } from "firebase/firestore";
 import BannerCarousel from "@/components/BannerCarousel";
 import type { ItemMenu, Categoria, ItemPedido, Mesa, Banner } from "@/types";
@@ -29,6 +30,7 @@ export default function MenuPage() {
   const [enviando, setEnviando] = useState(false);
   const [pedidoActivoId, setPedidoActivoId] = useState<string | null>(null);
   const [banners, setBanners] = useState<Banner[]>([]);
+  const [config, setConfig] = useState<RestaurantConfig>({ nombre: "Muana Terraza Tía Leny", subtitulo: "", emoji: "🌴" });
 
   const cartKey = `yakoo_cart_${mesaId}`;
   const pedidoKey = `yakoo_pedido_${mesaId}`;
@@ -70,6 +72,7 @@ export default function MenuPage() {
     });
     getCategorias().then((cats) => setCategorias(cats.filter((c) => c.activa)));
     getBannersActivos().then(setBanners);
+    getConfig().then(setConfig);
     const unsub = suscribirMenu(setItems);
     return unsub;
   }, [mesaId]);
@@ -122,8 +125,10 @@ export default function MenuPage() {
     <div className="min-h-screen flex flex-col pb-24">
       {/* Header */}
       <div className="bg-amber-600 text-white px-4 py-5 sticky top-0 z-10 shadow-md">
-        <h1 className="text-xl font-bold">🌴 Muana Terraza Tía Leny</h1>
-        {mesa && <p className="text-amber-100 text-sm mt-0.5">{mesa.nombre}</p>}
+        <h1 className="text-xl font-bold">{config.emoji} {config.nombre}</h1>
+        <p className="text-amber-100 text-sm mt-0.5">
+          {[config.subtitulo, mesa?.nombre].filter(Boolean).join(" · ")}
+        </p>
       </div>
 
       {/* Carrusel de banners */}

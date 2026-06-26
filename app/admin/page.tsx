@@ -20,6 +20,9 @@ export default function AdminPage() {
         <Link href="/admin/banners" className="block text-center bg-indigo-600 text-white py-3 px-6 rounded-xl font-semibold hover:bg-indigo-700 transition-colors">
           🖼️ Banners publicitarios
         </Link>
+        <Link href="/admin/configuracion" className="block text-center bg-teal-600 text-white py-3 px-6 rounded-xl font-semibold hover:bg-teal-700 transition-colors">
+          ⚙️ Nombre y cabecera del menú
+        </Link>
         <Link href="/admin/login" className="block text-center bg-emerald-700 text-white py-3 px-6 rounded-xl font-semibold hover:bg-emerald-800 transition-colors">
           🔒 Estadísticas (admin)
         </Link>
